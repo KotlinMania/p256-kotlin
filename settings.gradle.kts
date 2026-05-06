@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "p256-kotlin"
+

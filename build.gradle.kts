@@ -123,11 +123,10 @@ rootProject.extensions.configure<WasmYarnRootEnvSpec>("kotlinWasmYarnSpec") {
 
 rootProject.extensions.configure<YarnRootExtension>("kotlinYarn") {
     resolution("diff", "8.0.3")
-    resolution("serialize-javascript", "7.0.5")
-    resolution("webpack", "5.106.2")
-
     resolution("**/diff", "8.0.3")
+    resolution("serialize-javascript", "7.0.5")
     resolution("**/serialize-javascript", "7.0.5")
+    resolution("webpack", "5.106.2")
     resolution("**/webpack", "5.106.2")
     resolution("follow-redirects", "1.16.0")
     resolution("**/follow-redirects", "1.16.0")
@@ -169,7 +168,7 @@ mavenPublishing {
 
     pom {
         name.set("p256-kotlin")
-        description.set("Kotlin Multiplatform port of the Rust crate `p256` — NIST P-256 ECDSA / ECDH")
+        description.set("Kotlin Multiplatform port of RustCrypto/elliptic-curves - Pure Rust implementation of the NIST P-256 (a.k.a. secp256r1, prime256v1) elliptic curve as defined in SP 800-186, with support for ECDH, ECDSA signing/verification, and general purpose curve arithmetic")
         inceptionYear.set("2026")
         url.set("https://github.com/KotlinMania/p256-kotlin")
 
@@ -196,4 +195,18 @@ mavenPublishing {
             developerConnection.set("scm:git:ssh://github.com/KotlinMania/p256-kotlin.git")
         }
     }
+}
+
+tasks.register("test") {
+    group = "verification"
+    description =
+        "Runs a portable test suite (macOS + JS + WasmJS). Android and non-host native targets are intentionally excluded."
+
+    val defaultTestTasks = listOf(
+        "macosArm64Test",
+        "jsNodeTest",
+        "wasmJsNodeTest",
+    )
+
+    dependsOn(defaultTestTasks.mapNotNull { taskName -> tasks.findByName(taskName) })
 }
