@@ -1,7 +1,6 @@
 // port-lint: tests p256/src/arithmetic/scalar.rs
 package io.github.kotlinmania.p256
 
-
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -9,9 +8,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-
 class ScalarTest {
-
     @Test
     fun fromToBytesRoundtrip() {
         val k: ULong = 42uL
@@ -142,9 +139,8 @@ class ScalarTest {
         assertEquals(0, a.compareTo(a))
     }
 
-    private fun longToBigEndianBytes(value: ULong): ByteArray {
-        return ByteArray(8) { i ->
+    private fun longToBigEndianBytes(value: ULong): ByteArray =
+        ByteArray(8) { i ->
             ((value shr ((7 - i) * 8)).toByte())
         }
-    }
 }

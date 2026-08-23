@@ -1,8 +1,6 @@
 // port-lint: source p256/src/lib.rs
 package io.github.kotlinmania.p256
 
-
-
 /**
  * NIST P-256 elliptic curve.
  *
@@ -32,18 +30,26 @@ object NistP256 {
      * Serialized as hexadecimal:
      *     p = FFFFFFFF 00000001 00000000 00000000 00000000 FFFFFFFF FFFFFFFF FFFFFFFF
      */
-    val MODULUS: ULongArray = ulongArrayOf(
-        0xFFFFFFFFFFFFFFFFu, 0x00000000FFFFFFFFu, 0x0000000000000000u, 0xFFFFFFFF00000001u,
-    )
+    val MODULUS: ULongArray =
+        ulongArrayOf(
+            0xFFFFFFFFFFFFFFFFu,
+            0x00000000FFFFFFFFu,
+            0x0000000000000000u,
+            0xFFFFFFFF00000001u,
+        )
 
     /**
      * Order of NIST P-256's elliptic curve group (i.e. scalar modulus).
      *
      *     n = FFFFFFFF 00000000 FFFFFFFF FFFFFFFF BCE6FAAD A7179E84 F3B9CAC2 FC632551
      */
-    val ORDER: ULongArray = ulongArrayOf(
-        0xF3B9CAC2FC632551u, 0xBCE6FAADA7179E84u, 0xFFFFFFFFFFFFFFFFu, 0xFFFFFFFF00000000u,
-    )
+    val ORDER: ULongArray =
+        ulongArrayOf(
+            0xF3B9CAC2FC632551u,
+            0xBCE6FAADA7179E84u,
+            0xFFFFFFFFFFFFFFFFu,
+            0xFFFFFFFF00000000u,
+        )
 
     /** NIST P-256 points are typically uncompressed. */
     const val COMPRESS_POINTS: Boolean = false

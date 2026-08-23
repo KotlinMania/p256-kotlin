@@ -8,14 +8,22 @@ package io.github.kotlinmania.p256
  *
  *     p = FFFFFFFF 00000001 00000000 00000000 00000000 FFFFFFFF FFFFFFFF FFFFFFFF
  */
-internal val FIELD_MODULUS: ULongArray = ulongArrayOf(
-    0xFFFFFFFFFFFFFFFFuL, 0x00000000FFFFFFFFuL, 0x0000000000000000uL, 0xFFFFFFFF00000001uL,
-)
+internal val FIELD_MODULUS: ULongArray =
+    ulongArrayOf(
+        0xFFFFFFFFFFFFFFFFuL,
+        0x00000000FFFFFFFFuL,
+        0x0000000000000000uL,
+        0xFFFFFFFF00000001uL,
+    )
 
 /** R^2 = 2^512 mod p */
-internal val R_2: ULongArray = ulongArrayOf(
-    0x0000000000000003uL, 0xFFFFFFFBFFFFFFFFuL, 0xFFFFFFFFFFFFFFFEuL, 0x00000004FFFFFFFDuL,
-)
+internal val R_2: ULongArray =
+    ulongArrayOf(
+        0x0000000000000003uL,
+        0xFFFFFFFBFFFFFFFFuL,
+        0xFFFFFFFFFFFFFFFEuL,
+        0x00000004FFFFFFFDuL,
+    )
 
 /** Raw field element: 4 x 64-bit limbs in little-endian order. */
 internal typealias Fe = ULongArray
@@ -26,8 +34,9 @@ internal typealias Fe = ULongArray
  * The internal representation is in little-endian order. Elements are always in
  * Montgomery form; i.e., FieldElement(a) = aR mod p, with R = 2^256.
  */
-class FieldElement(val value: Fe) : Comparable<FieldElement> {
-
+class FieldElement(
+    val value: Fe,
+) : Comparable<FieldElement> {
     /** Zero field element. */
     constructor() : this(ulongArrayOf(0uL, 0uL, 0uL, 0uL))
 
@@ -71,9 +80,10 @@ class FieldElement(val value: Fe) : Comparable<FieldElement> {
         internal fun feToMontgomery(w: Fe): Fe = feMul(w, R_2)
 
         /** Translates a field element out of the Montgomery domain. */
-        internal fun feFromMontgomery(w: Fe): Fe = montgomeryReduce(
-            ulongArrayOf(w[0], w[1], w[2], w[3], 0uL, 0uL, 0uL, 0uL)
-        )
+        internal fun feFromMontgomery(w: Fe): Fe =
+            montgomeryReduce(
+                ulongArrayOf(w[0], w[1], w[2], w[3], 0uL, 0uL, 0uL, 0uL),
+            )
     }
 
     /** Returns the SEC1 encoding of this field element (big-endian 32 bytes). */
@@ -132,21 +142,31 @@ class FieldElement(val value: Fe) : Comparable<FieldElement> {
     fun invertUnchecked(): FieldElement {
         val t111 = multiply(multiply(square()).square())
         val t111111 = t111.multiply(t111.sqn(3))
-        val x15 = t111111.sqn(6).multiply(t111111).sqn(3).multiply(t111)
+        val x15 =
+            t111111
+                .sqn(6)
+                .multiply(t111111)
+                .sqn(3)
+                .multiply(t111)
         val x16 = x15.square().multiply(this)
         val i53 = x16.sqn(16).multiply(x16).sqn(15)
         val x47 = x15.multiply(i53)
-        return x47.multiply(i53.sqn(17).multiply(this).sqn(143).multiply(x47).sqn(47))
-            .sqn(2)
+        return x47
+            .multiply(
+                i53
+                    .sqn(17)
+                    .multiply(this)
+                    .sqn(143)
+                    .multiply(x47)
+                    .sqn(47),
+            ).sqn(2)
             .multiply(this)
     }
 
     /**
      * Returns the multiplicative inverse of self, or null if self is zero.
      */
-    fun invert(): FieldElement? {
-        return if (isZero()) null else invertUnchecked()
-    }
+    fun invert(): FieldElement? = if (isZero()) null else invertUnchecked()
 
     /**
      * Returns the square root of self mod p, or null if no square root exists.
@@ -159,7 +179,15 @@ class FieldElement(val value: Fe) : Comparable<FieldElement> {
         val t1111 = t11.multiply(t11.sqn(2))
         val t11111111 = t1111.multiply(t1111.sqn(4))
         val x16 = t11111111.sqn(8).multiply(t11111111)
-        val sqrt = x16.sqn(16).multiply(x16).sqn(32).multiply(this).sqn(96).multiply(this).sqn(94)
+        val sqrt =
+            x16
+                .sqn(16)
+                .multiply(x16)
+                .sqn(32)
+                .multiply(this)
+                .sqn(96)
+                .multiply(this)
+                .sqn(94)
         return if (sqrt.square() == this) sqrt else null
     }
 
@@ -171,9 +199,7 @@ class FieldElement(val value: Fe) : Comparable<FieldElement> {
 
     override fun hashCode(): Int = value.contentHashCode()
 
-    override fun compareTo(other: FieldElement): Int {
-        return cmpLimbs(feFromMontgomery(value), feFromMontgomery(other.value))
-    }
+    override fun compareTo(other: FieldElement): Int = cmpLimbs(feFromMontgomery(value), feFromMontgomery(other.value))
 
     override fun toString(): String {
         val regular = feFromMontgomery(value)
@@ -328,12 +354,13 @@ internal fun hexToBytes(hex: String): ByteArray {
     }
 }
 
-private fun Char.hexDigitToInt(): Int = when (this) {
-    in '0'..'9' -> this - '0'
-    in 'a'..'f' -> this - 'a' + 10
-    in 'A'..'F' -> this - 'A' + 10
-    else -> 0
-}
+private fun Char.hexDigitToInt(): Int =
+    when (this) {
+        in '0'..'9' -> this - '0'
+        in 'a'..'f' -> this - 'a' + 10
+        in 'A'..'F' -> this - 'A' + 10
+        else -> 0
+    }
 
 /** Converts a big-endian byte array to little-endian limbs. */
 internal fun bytesToLimbs(bytes: ByteArray): ULongArray {
