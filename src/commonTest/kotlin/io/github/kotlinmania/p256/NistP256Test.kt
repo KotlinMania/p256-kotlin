@@ -1,14 +1,10 @@
 // port-lint: tests p256/src/lib.rs
 package io.github.kotlinmania.p256
 
-
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
-
 
 class NistP256Test {
-
     @Test
     fun modulusIsCorrect() {
         val expected = "ffffffff00000001000000000000000000000000ffffffffffffffffffffffff"
@@ -64,9 +60,12 @@ class NistP256Test {
     }
 
     private fun ByteArray.toHex(): String {
+        val hexChars = "0123456789abcdef"
         val sb = StringBuilder(size * 2)
         for (b in this) {
-            sb.append(String.format("%02x", b.toInt() and 0xFF))
+            val v = b.toInt() and 0xFF
+            sb.append(hexChars[v shr 4])
+            sb.append(hexChars[v and 0x0F])
         }
         return sb.toString()
     }

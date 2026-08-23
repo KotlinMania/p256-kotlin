@@ -6,19 +6,32 @@ package io.github.kotlinmania.p256
  * Constant representing the scalar modulus (order of the P-256 group).
  * n = FFFFFFFF 00000000 FFFFFFFF FFFFFFFF BCE6FAAD A7179E84 F3B9CAC2 FC632551
  */
-internal val SCALAR_MODULUS: ULongArray = ulongArrayOf(
-    0xF3B9CAC2FC632551uL, 0xBCE6FAADA7179E84uL, 0xFFFFFFFFFFFFFFFFuL, 0xFFFFFFFF00000000uL,
-)
+internal val SCALAR_MODULUS: ULongArray =
+    ulongArrayOf(
+        0xF3B9CAC2FC632551uL,
+        0xBCE6FAADA7179E84uL,
+        0xFFFFFFFFFFFFFFFFuL,
+        0xFFFFFFFF00000000uL,
+    )
 
 /** MU = floor(2^512 / n) */
-internal val MU: ULongArray = ulongArrayOf(
-    0x012FFD85EEDF9BFEuL, 0x43190552DF1A6C21uL, 0xFFFFFFFEFFFFFFFFuL, 0x00000000FFFFFFFFuL, 0x0000000000000001uL,
-)
+internal val MU: ULongArray =
+    ulongArrayOf(
+        0x012FFD85EEDF9BFEuL,
+        0x43190552DF1A6C21uL,
+        0xFFFFFFFEFFFFFFFFuL,
+        0x00000000FFFFFFFFuL,
+        0x0000000000000001uL,
+    )
 
 /** MODULUS / 2 as a Scalar */
-internal val FRAC_MODULUS_2: ULongArray = ulongArrayOf(
-    0x79DCE5617E3192A8uL, 0xDE737D56D38BCF42uL, 0x7FFFFFFFFFFFFFFFuL, 0x7FFFFFFF80000000uL,
-)
+internal val FRAC_MODULUS_2: ULongArray =
+    ulongArrayOf(
+        0x79DCE5617E3192A8uL,
+        0xDE737D56D38BCF42uL,
+        0x7FFFFFFFFFFFFFFFuL,
+        0x7FFFFFFF80000000uL,
+    )
 
 /**
  * Scalars are elements in the finite field modulo n (the order of the NIST P-256 group).
@@ -27,8 +40,9 @@ internal val FRAC_MODULUS_2: ULongArray = ulongArrayOf(
  * in little-endian order. Unlike [FieldElement], scalars are NOT in Montgomery form —
  * they use Barrett reduction for multiplication.
  */
-class Scalar(val value: ULongArray) : Comparable<Scalar> {
-
+class Scalar(
+    val value: ULongArray,
+) : Comparable<Scalar> {
     constructor() : this(ulongArrayOf(0uL, 0uL, 0uL, 0uL))
 
     companion object {
@@ -126,11 +140,15 @@ class Scalar(val value: ULongArray) : Comparable<Scalar> {
      * Returns the multiplicative inverse of self (Fermat's Little Theorem: a^(n-2) mod n).
      * Does not check that self is non-zero.
      */
-    fun invertUnchecked(): Scalar {
-        return powVartime(ulongArrayOf(
-            0xF3B9CAC2FC63254FuL, 0xBCE6FAADA7179E84uL, 0xFFFFFFFFFFFFFFFFuL, 0xFFFFFFFF00000000uL,
-        ))
-    }
+    fun invertUnchecked(): Scalar =
+        powVartime(
+            ulongArrayOf(
+                0xF3B9CAC2FC63254FuL,
+                0xBCE6FAADA7179E84uL,
+                0xFFFFFFFFFFFFFFFFuL,
+                0xFFFFFFFF00000000uL,
+            ),
+        )
 
     /** Exponentiates self by `exp` using square-and-multiply. */
     fun powVartime(exp: ULongArray): Scalar {
