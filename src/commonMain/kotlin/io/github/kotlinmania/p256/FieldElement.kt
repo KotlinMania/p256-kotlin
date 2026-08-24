@@ -35,7 +35,7 @@ internal typealias Fe = ULongArray
  * Montgomery form; i.e., FieldElement(a) = aR mod p, with R = 2^256.
  */
 class FieldElement(
-    val value: Fe,
+    val value: ULongArray,
 ) : Comparable<FieldElement> {
     /** Zero field element. */
     constructor() : this(ulongArrayOf(0uL, 0uL, 0uL, 0uL))
