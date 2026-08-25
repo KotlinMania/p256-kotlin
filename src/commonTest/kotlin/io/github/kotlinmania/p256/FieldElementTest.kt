@@ -1,4 +1,4 @@
-// port-lint: tests p256/src/test_vectors/field.rs
+// port-lint: tests arithmetic/field.rs
 package io.github.kotlinmania.p256
 
 import kotlin.test.Test
@@ -34,13 +34,13 @@ class FieldElementTest {
         )
 
     @Test
-    fun fromBytes_zero() {
+    fun fromBytesZero() {
         val zero = FieldElement.fromBytes(ByteArray(32))
         assertEquals(FieldElement.ZERO, zero)
     }
 
     @Test
-    fun fromBytes_one() {
+    fun fromBytesOne() {
         val bytes = ByteArray(32)
         bytes[31] = 1
         val one = FieldElement.fromBytes(bytes)
@@ -48,7 +48,7 @@ class FieldElementTest {
     }
 
     @Test
-    fun fromBytes_outOfRange() {
+    fun fromBytesOutOfRange() {
         val bytes = ByteArray(32) { 0xFF.toByte() }
         try {
             FieldElement.fromBytes(bytes)
@@ -59,14 +59,14 @@ class FieldElementTest {
     }
 
     @Test
-    fun toBytes_zero() {
+    fun toBytesZero() {
         val bytes = FieldElement.ZERO.toBytes()
         assertEquals(32, bytes.size)
         assertTrue(bytes.all { it == 0.toByte() })
     }
 
     @Test
-    fun toBytes_one() {
+    fun toBytesOne() {
         val bytes = FieldElement.ONE.toBytes()
         assertEquals(32, bytes.size)
         assertEquals(1, bytes[31].toInt())
@@ -173,9 +173,7 @@ class FieldElementTest {
         val one = FieldElement.ONE
         val two = one.add(one)
         val four = two.square()
-        // 2^2 = 4
-        // pow_vartime with exponent 2 (but we don't have pow_vartime on FieldElement,
-        // this is tested through repeated squaring)
+        // Power with exponent 2 (tested through repeated squaring)
         assertEquals(four, two.square())
     }
 
