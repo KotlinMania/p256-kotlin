@@ -4,10 +4,10 @@ Based on AST analysis, here are the concrete next steps.
 
 ## Summary
 
-- **Files Present:** 7/23 (30.4%)
-- **Function parity:** 29/145 matched (target 114) — 20.0%
+- **Files Present:** 7/16 (43.8%)
+- **Function parity:** 29/109 matched (target 114) — 26.6%
 - **Class/type parity:** 5/39 matched (target 13) — 12.8%
-- **Combined symbol parity:** 34/184 matched (target 127) — 18.5%
+- **Combined symbol parity:** 34/148 matched (target 127) — 23.0%
 - **Average inline-code cosine:** 0.41 (function body across 5 matched files)
 - **Average documentation cosine:** 0.66 (doc text across 5 matched files)
 - **Cheat-zeroed Files:** 1
@@ -29,7 +29,7 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 1. arithmetic.scalar
 
-- **Target:** `p256.Scalar [PROVENANCE-FALLBACK]`
+- **Target:** `p256.Scalar`
 - **Similarity:** 0.14
 - **Dependents:** 0
 - **Priority Score:** 375408.6
@@ -38,15 +38,10 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/6 matched (target 2)
 - **Missing types:** `Repr`, `ReprBits`, `Uint`, `Output`, `Bytes`
 - **Tests:** 1/3 matched
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `arithmetic/scalar.rs` vs expected `arithmetic/scalar.rs`
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `tests:arithmetic/scalar.rs` vs expected `arithmetic/scalar.rs`
-- **Proposed provenance header:** `// port-lint: source arithmetic/scalar.rs` (current: `// port-lint: source arithmetic/scalar.rs`)
-- **Proposed provenance header:** `// port-lint: tests arithmetic/scalar.rs` (current: `// port-lint: tests arithmetic/scalar.rs`)
-- **Lint issues:** 2
 
-### 2. p256.lib
+### 2. lib
 
-- **Target:** `p256.NistP256 [PROVENANCE-FALLBACK]`
+- **Target:** `p256.NistP256`
 - **Similarity:** 0.00
 - **Dependents:** 0
 - **Priority Score:** 131410.0
@@ -54,15 +49,10 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing functions:** `decode_field_bytes`, `encode_field_bytes`
 - **Types:** 1/12 matched (target 2)
 - **Missing types:** `FieldBytesSize`, `Uint`, `BlindedScalar`, `CompressedPoint`, `EncodedPoint`, `FieldBytes`, `NonZeroScalar`, `PublicKey`, `SecretKey`, `ScalarBits`, `Hash`
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `lib.rs` vs expected `lib.rs`
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `tests:lib.rs` vs expected `lib.rs`
-- **Proposed provenance header:** `// port-lint: source lib.rs` (current: `// port-lint: source lib.rs`)
-- **Proposed provenance header:** `// port-lint: tests lib.rs` (current: `// port-lint: tests lib.rs`)
-- **Lint issues:** 2
 
-### 3. p256.ecdsa
+### 3. ecdsa
 
-- **Target:** `p256.Ecdsa [STUB] [PROVENANCE-FALLBACK]`
+- **Target:** `p256.Ecdsa [STUB]`
 - **Similarity:** 0.00
 - **Dependents:** 0
 - **Priority Score:** 90910.0
@@ -71,13 +61,10 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/5 matched (target 1)
 - **Missing types:** `Signature`, `DerSignature`, `SigningKey`, `VerifyingKey`, `Digest`
 - **Tests:** 0/4 matched
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `ecdsa.rs` vs expected `ecdsa.rs`
-- **Proposed provenance header:** `// port-lint: source ecdsa.rs` (current: `// port-lint: source ecdsa.rs`)
-- **Lint issues:** 1
 
 ### 4. arithmetic.field
 
-- **Target:** `p256.FieldElement [PROVENANCE-FALLBACK]`
+- **Target:** `p256.FieldElement`
 - **Similarity:** 0.56
 - **Dependents:** 0
 - **Priority Score:** 61704.4
@@ -86,15 +73,10 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 3)
 - **Missing types:** `Repr`
 - **Tests:** 5/7 matched
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `arithmetic/field.rs` vs expected `arithmetic/field.rs`
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `tests:arithmetic/field.rs` vs expected `arithmetic/field.rs`
-- **Proposed provenance header:** `// port-lint: source arithmetic/field.rs` (current: `// port-lint: source arithmetic/field.rs`)
-- **Proposed provenance header:** `// port-lint: tests arithmetic/field.rs` (current: `// port-lint: tests arithmetic/field.rs`)
-- **Lint issues:** 2
 
-### 5. p256.arithmetic
+### 5. arithmetic
 
-- **Target:** `p256.Arithmetic [PROVENANCE-FALLBACK]`
+- **Target:** `p256.Arithmetic`
 - **Similarity:** 1.00
 - **Dependents:** 0
 - **Priority Score:** 40600.0
@@ -102,13 +84,10 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing functions:** _none_
 - **Types:** 2/6 matched (target 3)
 - **Missing types:** `Scalar`, `CurveGroup`, `FieldElement`, `PointArithmetic`
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `arithmetic.rs` vs expected `arithmetic.rs`
-- **Proposed provenance header:** `// port-lint: source arithmetic.rs` (current: `// port-lint: source arithmetic.rs`)
-- **Lint issues:** 1
 
-### 6. p256.ecdh
+### 6. ecdh
 
-- **Target:** `p256.Ecdh [STUB] [PROVENANCE-FALLBACK]`
+- **Target:** `p256.Ecdh [STUB]`
 - **Similarity:** 1.00
 - **Dependents:** 0
 - **Priority Score:** 20200.0
@@ -116,13 +95,10 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing functions:** _none_
 - **Types:** 0/2 matched (target 1)
 - **Missing types:** `EphemeralSecret`, `SharedSecret`
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `ecdh.rs` vs expected `ecdh.rs`
-- **Proposed provenance header:** `// port-lint: source ecdh.rs` (current: `// port-lint: source ecdh.rs`)
-- **Lint issues:** 1
 
 ### 7. arithmetic.util
 
-- **Target:** `p256.Util [PROVENANCE-FALLBACK]`
+- **Target:** `p256.Util`
 - **Similarity:** 0.34
 - **Dependents:** 0
 - **Priority Score:** 306.6
@@ -130,9 +106,6 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing functions:** _none_
 - **Types:** 0/0 matched (target 1)
 - **Missing types:** _none_
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `arithmetic/util.rs` vs expected `arithmetic/util.rs`
-- **Proposed provenance header:** `// port-lint: source arithmetic/util.rs` (current: `// port-lint: source arithmetic/util.rs`)
-- **Lint issues:** 1
 
 ## Success Criteria
 
