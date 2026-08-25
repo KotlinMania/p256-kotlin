@@ -1,4 +1,4 @@
-// port-lint: source p256/src/arithmetic.rs
+// port-lint: source arithmetic.rs
 package io.github.kotlinmania.p256
 
 /**

@@ -1,5 +1,4 @@
-// port-lint: source p256/src/arithmetic/scalar.rs
-// port-lint: source p256/src/arithmetic/scalar/scalar64.rs
+// port-lint: source arithmetic/scalar.rs
 package io.github.kotlinmania.p256
 
 /**

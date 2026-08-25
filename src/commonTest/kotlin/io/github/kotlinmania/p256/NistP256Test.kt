@@ -1,4 +1,4 @@
-// port-lint: tests p256/src/lib.rs
+// port-lint: tests lib.rs
 package io.github.kotlinmania.p256
 
 import kotlin.test.Test
