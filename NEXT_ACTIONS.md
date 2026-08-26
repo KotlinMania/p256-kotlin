@@ -5,11 +5,11 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 7/16 (43.8%)
-- **Function parity:** 29/109 matched (target 114) — 26.6%
-- **Class/type parity:** 5/39 matched (target 13) — 12.8%
-- **Combined symbol parity:** 34/148 matched (target 127) — 23.0%
-- **Average inline-code cosine:** 0.41 (function body across 5 matched files)
-- **Average documentation cosine:** 0.66 (doc text across 5 matched files)
+- **Function parity:** 31/109 matched (target 125) — 28.4%
+- **Class/type parity:** 14/39 matched (target 20) — 35.9%
+- **Combined symbol parity:** 45/148 matched (target 145) — 30.4%
+- **Average inline-code cosine:** 0.33 (function body across 7 matched files)
+- **Average documentation cosine:** 0.63 (doc text across 7 matched files)
 - **Cheat-zeroed Files:** 1
 - **Critical Issues:** 6 files with <0.60 function similarity
 
@@ -42,27 +42,15 @@ Every matched file is listed below with function and type symbol parity.
 ### 2. lib
 
 - **Target:** `p256.NistP256`
-- **Similarity:** 0.00
+- **Similarity:** 0.27
 - **Dependents:** 0
-- **Priority Score:** 131410.0
-- **Functions:** 0/2 matched (target 10)
-- **Missing functions:** `decode_field_bytes`, `encode_field_bytes`
-- **Types:** 1/12 matched (target 2)
-- **Missing types:** `FieldBytesSize`, `Uint`, `BlindedScalar`, `CompressedPoint`, `EncodedPoint`, `FieldBytes`, `NonZeroScalar`, `PublicKey`, `SecretKey`, `ScalarBits`, `Hash`
+- **Priority Score:** 71407.3
+- **Functions:** 2/2 matched (target 15)
+- **Missing functions:** _none_
+- **Types:** 5/12 matched (target 6)
+- **Missing types:** `FieldBytesSize`, `Uint`, `BlindedScalar`, `CompressedPoint`, `FieldBytes`, `ScalarBits`, `Hash`
 
-### 3. ecdsa
-
-- **Target:** `p256.Ecdsa [STUB]`
-- **Similarity:** 0.00
-- **Dependents:** 0
-- **Priority Score:** 90910.0
-- **Functions:** 0/4 matched (target 0)
-- **Missing functions:** `rfc6979`, `prehash_signer_signing_with_sha384`, `prehash_signer_verification_with_sha384`, `scalar_blinding`
-- **Types:** 0/5 matched (target 1)
-- **Missing types:** `Signature`, `DerSignature`, `SigningKey`, `VerifyingKey`, `Digest`
-- **Tests:** 0/4 matched
-
-### 4. arithmetic.field
+### 3. arithmetic.field
 
 - **Target:** `p256.FieldElement`
 - **Similarity:** 0.56
@@ -73,6 +61,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 3)
 - **Missing types:** `Repr`
 - **Tests:** 5/7 matched
+
+### 4. ecdsa
+
+- **Target:** `p256.Ecdsa`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 60910.0
+- **Functions:** 0/4 matched (target 5)
+- **Missing functions:** `rfc6979`, `prehash_signer_signing_with_sha384`, `prehash_signer_verification_with_sha384`, `scalar_blinding`
+- **Types:** 3/5 matched (target 3)
+- **Missing types:** `DerSignature`, `Digest`
+- **Tests:** 0/4 matched
 
 ### 5. arithmetic
 
@@ -85,18 +85,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 2/6 matched (target 3)
 - **Missing types:** `Scalar`, `CurveGroup`, `FieldElement`, `PointArithmetic`
 
-### 6. ecdh
-
-- **Target:** `p256.Ecdh [STUB]`
-- **Similarity:** 1.00
-- **Dependents:** 0
-- **Priority Score:** 20200.0
-- **Functions:** 0/0 matched
-- **Missing functions:** _none_
-- **Types:** 0/2 matched (target 1)
-- **Missing types:** `EphemeralSecret`, `SharedSecret`
-
-### 7. arithmetic.util
+### 6. arithmetic.util
 
 - **Target:** `p256.Util`
 - **Similarity:** 0.34
@@ -105,6 +94,17 @@ Every matched file is listed below with function and type symbol parity.
 - **Functions:** 3/3 matched (target 4)
 - **Missing functions:** _none_
 - **Types:** 0/0 matched (target 1)
+- **Missing types:** _none_
+
+### 7. ecdh
+
+- **Target:** `p256.Ecdh [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 210.0
+- **Functions:** 0/0 matched (target 1)
+- **Missing functions:** _none_
+- **Types:** 2/2 matched
 - **Missing types:** _none_
 
 ## Success Criteria
