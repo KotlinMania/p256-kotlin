@@ -3,6 +3,7 @@ package io.github.kotlinmania.p256
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class NistP256Test {
     @Test
@@ -57,6 +58,31 @@ class NistP256Test {
         // a = -3 mod p = p - 3
         val expectedA = "ffffffff00000001000000000000000000000000fffffffffffffffffffffffc"
         assertEquals(expectedA, CurveParams.EQUATION_A.toBytes().toHex())
+    }
+
+    @Test
+    fun fieldBytesCodec() {
+        val fe = FieldElement.ONE
+        val bytes = NistP256.encodeFieldBytes(fe)
+        val decoded = NistP256.decodeFieldBytes(bytes)
+        assertEquals(fe, decoded)
+    }
+
+    @Test
+    fun signatureRoundtrip() {
+        val r = ByteArray(32) { (it + 1).toByte() }
+        val s = ByteArray(32) { (it + 33).toByte() }
+        val sig = Signature(r, s)
+        val raw = sig.toBytes()
+        val parsed = Signature.fromBytes(raw)
+        assertEquals(sig, parsed)
+    }
+
+    @Test
+    fun ecdhSecret() {
+        val secret = EphemeralSecret(Scalar.ONE)
+        val shared = SharedSecret(ByteArray(32) { 0x42 })
+        assertEquals(32, shared.rawSecretBytes().size)
     }
 
     private fun ByteArray.toHex(): String {

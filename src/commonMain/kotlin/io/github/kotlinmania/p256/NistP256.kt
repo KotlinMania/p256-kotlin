@@ -7,28 +7,13 @@ package io.github.kotlinmania.p256
  * This curve is also known as prime256v1 (ANSI X9.62) and secp256r1 (SECG)
  * and is specified in NIST SP 800-186: Recommendations for Discrete
  * Logarithm-based Cryptography: Elliptic Curve Domain Parameters.
- *
- * It's included in the US National Security Agency's "Suite B" and is widely
- * used in protocols like TLS and the associated X.509 PKI.
- *
- * Its equation is `y² = x³ - 3x + b` over a ~256-bit prime field where `b` is
- * the "verifiably random" constant:
- *
- *     b = 41058363725152142129326129780047268409114441015993725554835256314039467401291
- *
- * The specific origins of this constant have never been fully disclosed
- * (it is the SHA-1 digest of an unknown NSA-selected constant).
  */
-
 object NistP256 {
     /** 32-byte serialized field elements. */
     const val FIELD_BYTES_SIZE: Int = 32
 
     /**
      * Field modulus p = 2^{224}(2^{32} − 1) + 2^{192} + 2^{96} − 1
-     *
-     * Serialized as hexadecimal:
-     *     p = FFFFFFFF 00000001 00000000 00000000 00000000 FFFFFFFF FFFFFFFF FFFFFFFF
      */
     val MODULUS: ULongArray =
         ulongArrayOf(
@@ -40,8 +25,6 @@ object NistP256 {
 
     /**
      * Order of NIST P-256's elliptic curve group (i.e. scalar modulus).
-     *
-     *     n = FFFFFFFF 00000000 FFFFFFFF FFFFFFFF BCE6FAAD A7179E84 F3B9CAC2 FC632551
      */
     val ORDER: ULongArray =
         ulongArrayOf(
@@ -62,4 +45,34 @@ object NistP256 {
 
     /** JWK curve identifier. */
     const val CRV: String = "P-256"
+
+    /** Decodes field bytes into a FieldElement. */
+    fun decodeFieldBytes(bytes: ByteArray): FieldElement = FieldElement.fromBytes(bytes)
+
+    /** Encodes a FieldElement into field bytes (32 bytes big-endian). */
+    fun encodeFieldBytes(fe: FieldElement): ByteArray = fe.toBytes()
 }
+
+/** Non-zero scalar in NIST P-256 group. */
+class NonZeroScalar(
+    val scalar: Scalar,
+) {
+    init {
+        require(!scalar.isZero()) { "Scalar must not be zero" }
+    }
+}
+
+/** Public key represented by an AffinePoint. */
+class PublicKey(
+    val point: AffinePoint,
+)
+
+/** Secret key represented by a NonZeroScalar. */
+class SecretKey(
+    val scalar: NonZeroScalar,
+)
+
+/** Encoded point bytes. */
+class EncodedPoint(
+    val bytes: ByteArray,
+)
