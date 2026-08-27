@@ -3,7 +3,6 @@ package io.github.kotlinmania.p256
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class NistP256Test {
     @Test
