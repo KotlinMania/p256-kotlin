@@ -1,4 +1,4 @@
-// port-lint: tests arithmetic/field.rs
+// port-lint: tests p256/src/arithmetic/field.rs
 package io.github.kotlinmania.p256
 
 import kotlin.test.Test

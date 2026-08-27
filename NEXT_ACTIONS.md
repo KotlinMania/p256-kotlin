@@ -4,13 +4,13 @@ Based on AST analysis, here are the concrete next steps.
 
 ## Summary
 
-- **Files Present:** 7/16 (43.8%)
-- **Function parity:** 31/109 matched (target 125) — 28.4%
-- **Class/type parity:** 14/39 matched (target 20) — 35.9%
-- **Combined symbol parity:** 45/148 matched (target 145) — 30.4%
-- **Average inline-code cosine:** 0.33 (function body across 7 matched files)
-- **Average documentation cosine:** 0.63 (doc text across 7 matched files)
-- **Cheat-zeroed Files:** 1
+- **Files Present:** 7/23 (30.4%)
+- **Function parity:** 31/145 matched (target 125) — 21.4%
+- **Class/type parity:** 11/39 matched (target 20) — 28.2%
+- **Combined symbol parity:** 42/184 matched (target 145) — 22.8%
+- **Average inline-code cosine:** 0.34 (function body across 6 matched files)
+- **Average documentation cosine:** 0.55 (doc text across 6 matched files)
+- **Cheat-zeroed Files:** 3
 - **Critical Issues:** 6 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
@@ -39,12 +39,12 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** `Repr`, `ReprBits`, `Uint`, `Output`, `Bytes`
 - **Tests:** 1/3 matched
 
-### 2. lib
+### 2. p256.lib
 
-- **Target:** `p256.NistP256`
-- **Similarity:** 0.27
+- **Target:** `p256.NistP256 [STUB]`
+- **Similarity:** 0.00
 - **Dependents:** 0
-- **Priority Score:** 71407.3
+- **Priority Score:** 71410.0
 - **Functions:** 2/2 matched (target 15)
 - **Missing functions:** _none_
 - **Types:** 5/12 matched (target 6)
@@ -62,19 +62,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** `Repr`
 - **Tests:** 5/7 matched
 
-### 4. ecdsa
-
-- **Target:** `p256.Ecdsa`
-- **Similarity:** 0.00
-- **Dependents:** 0
-- **Priority Score:** 60910.0
-- **Functions:** 0/4 matched (target 5)
-- **Missing functions:** `rfc6979`, `prehash_signer_signing_with_sha384`, `prehash_signer_verification_with_sha384`, `scalar_blinding`
-- **Types:** 3/5 matched (target 3)
-- **Missing types:** `DerSignature`, `Digest`
-- **Tests:** 0/4 matched
-
-### 5. arithmetic
+### 4. p256.arithmetic
 
 - **Target:** `p256.Arithmetic`
 - **Similarity:** 1.00
@@ -85,7 +73,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 2/6 matched (target 3)
 - **Missing types:** `Scalar`, `CurveGroup`, `FieldElement`, `PointArithmetic`
 
-### 6. arithmetic.util
+### 5. arithmetic.util
 
 - **Target:** `p256.Util`
 - **Similarity:** 0.34
@@ -96,7 +84,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 1)
 - **Missing types:** _none_
 
-### 7. ecdh
+### 6. p256.ecdh
 
 - **Target:** `p256.Ecdh [ZERO]`
 - **Similarity:** 0.00
@@ -105,6 +93,17 @@ Every matched file is listed below with function and type symbol parity.
 - **Functions:** 0/0 matched (target 1)
 - **Missing functions:** _none_
 - **Types:** 2/2 matched
+- **Missing types:** _none_
+
+### 7. tests.ecdsa
+
+- **Target:** `p256.Ecdsa [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 10.0
+- **Functions:** 0/0 matched (target 5)
+- **Missing functions:** _none_
+- **Types:** 0/0 matched (target 3)
 - **Missing types:** _none_
 
 ## Success Criteria
