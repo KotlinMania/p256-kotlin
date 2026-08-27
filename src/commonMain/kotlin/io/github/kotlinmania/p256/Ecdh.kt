@@ -1,4 +1,4 @@
-// port-lint: source p256/src/ecdh.rs
+// port-lint: source ecdh.rs
 package io.github.kotlinmania.p256
 
 /**
