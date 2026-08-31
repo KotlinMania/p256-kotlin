@@ -1,4 +1,4 @@
-// port-lint: source lib.rs
+// port-lint: source p256/src/lib.rs
 package io.github.kotlinmania.p256
 
 /**
