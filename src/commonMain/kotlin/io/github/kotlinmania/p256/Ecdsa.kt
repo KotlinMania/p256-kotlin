@@ -1,4 +1,4 @@
-// port-lint: source ecdsa.rs
+// port-lint: source p256/src/ecdsa.rs
 package io.github.kotlinmania.p256
 
 /**
