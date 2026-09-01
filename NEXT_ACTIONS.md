@@ -5,12 +5,12 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 7/23 (30.4%)
-- **Function parity:** 31/145 matched (target 125) — 21.4%
-- **Class/type parity:** 14/39 matched (target 20) — 35.9%
-- **Combined symbol parity:** 45/184 matched (target 145) — 24.5%
+- **Function parity:** 29/143 matched (target 110) — 20.3%
+- **Class/type parity:** 9/27 matched (target 14) — 33.3%
+- **Combined symbol parity:** 38/170 matched (target 124) — 22.4%
 - **Average inline-code cosine:** 0.34 (function body across 6 matched files)
 - **Average documentation cosine:** 0.61 (doc text across 6 matched files)
-- **Cheat-zeroed Files:** 2
+- **Cheat-zeroed Files:** 1
 - **Critical Issues:** 6 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
@@ -39,18 +39,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** `Repr`, `ReprBits`, `Uint`, `Output`, `Bytes`
 - **Tests:** 1/3 matched
 
-### 2. p256.lib
-
-- **Target:** `p256.NistP256 [STUB]`
-- **Similarity:** 0.00
-- **Dependents:** 0
-- **Priority Score:** 71410.0
-- **Functions:** 2/2 matched (target 15)
-- **Missing functions:** _none_
-- **Types:** 5/12 matched (target 6)
-- **Missing types:** `FieldBytesSize`, `Uint`, `BlindedScalar`, `CompressedPoint`, `FieldBytes`, `ScalarBits`, `Hash`
-
-### 3. arithmetic.field
+### 2. arithmetic.field
 
 - **Target:** `p256.FieldElement`
 - **Similarity:** 0.56
@@ -62,7 +51,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** `Repr`
 - **Tests:** 5/7 matched
 
-### 4. p256.ecdsa
+### 3. p256.ecdsa
 
 - **Target:** `p256.Ecdsa`
 - **Similarity:** 0.00
@@ -74,7 +63,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** `DerSignature`, `Digest`
 - **Tests:** 0/4 matched
 
-### 5. p256.arithmetic
+### 4. p256.arithmetic
 
 - **Target:** `p256.Arithmetic`
 - **Similarity:** 1.00
@@ -85,7 +74,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 2/6 matched (target 3)
 - **Missing types:** `Scalar`, `CurveGroup`, `FieldElement`, `PointArithmetic`
 
-### 6. arithmetic.util
+### 5. arithmetic.util
 
 - **Target:** `p256.Util`
 - **Similarity:** 0.34
@@ -96,7 +85,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 1)
 - **Missing types:** _none_
 
-### 7. p256.ecdh
+### 6. p256.ecdh
 
 - **Target:** `p256.Ecdh [ZERO]`
 - **Similarity:** 0.00
@@ -115,4 +104,17 @@ For each file to be considered "complete":
 - All tests ported
 - Documentation ported
 - port-lint header present
+
+## Reexport / Wiring Modules
+
+These files match `reexport_modules` patterns in `.ast_distance_config.json`. They are filtered out of
+normal priority and missing-file ladders because they are wiring
+modules, not direct logic ports. Consult them for call-site routing;
+do not treat them as the next implementation target by default.
+
+### Matched
+
+| Source | Target | Path |
+|--------|--------|------|
+| `p256.lib` | `p256.NistP256` | `p256/src/lib` |
 
