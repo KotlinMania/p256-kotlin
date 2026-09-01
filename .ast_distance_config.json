@@ -2,7 +2,7 @@
   "type": "port",
   "name": "p256-kotlin",
   "source": {
-    "path": "tmp",
+    "path": "tmp/p256/src",
     "lang": "rust"
   },
   "target": {
