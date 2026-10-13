@@ -80,6 +80,7 @@ class NistP256Test {
     @Test
     fun ecdhSecret() {
         val secret = EphemeralSecret(Scalar.ONE)
+        assertEquals(Scalar.ONE, secret.secretScalar.scalar)
         val shared = SharedSecret(ByteArray(32) { 0x42 })
         assertEquals(32, shared.rawSecretBytes().size)
     }
