@@ -139,6 +139,42 @@ class ScalarTest {
         assertEquals(0, a.compareTo(a))
     }
 
+    @Test
+    fun invertAndInvertVartimeAreEquivalent() {
+        repeat(16) {
+            val w = Scalar.random()
+            val inv = w.invert()
+            val invVartime = w.invertVartime()
+            assertEquals(inv, invVartime)
+            if (inv != null) {
+                assertEquals(Scalar.ONE, w.multiply(inv))
+            }
+        }
+    }
+
+    @Test
+    fun reduceAndZeroizeAndCtEq() {
+        val maxBytes = ByteArray(32) { 0xFF.toByte() }
+        val reduced = Scalar.reduceBytes(maxBytes)
+        assertFalse(reduced.isZero())
+
+        val reducedNonZero = Scalar.reduceNonZeroBytes(ByteArray(32))
+        assertEquals(Scalar.ONE, reducedNonZero)
+
+        val secretKey = SecretKey.random()
+        val fromSk = Scalar.fromSecretKey(secretKey)
+        assertEquals(secretKey.scalar.scalar, fromSk)
+
+        val selected = Scalar.conditionalSelect(Scalar.ZERO, Scalar.ONE, true)
+        assertEquals(Scalar.ONE, selected)
+
+        val copy = Scalar.fromRepr(reduced.toRepr())
+        assertNotNull(copy)
+        assertTrue(reduced.ctEq(copy))
+        copy.zeroize()
+        assertTrue(copy.isZero())
+    }
+
     private fun longToBigEndianBytes(value: ULong): ByteArray =
         ByteArray(8) { i ->
             ((value shr ((7 - i) * 8)).toByte())
