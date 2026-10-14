@@ -1,6 +1,16 @@
 // port-lint: source arithmetic/scalar.rs
 package io.github.kotlinmania.p256
 
+import io.github.kotlinmania.constanttimeeq.constantTimeEq32
+import io.github.kotlinmania.getrandom.getrandom
+import io.github.kotlinmania.serde.SerdeError
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serdecore.de.Deserializer
+import io.github.kotlinmania.serdecore.de.Visitor
+import io.github.kotlinmania.serdecore.ser.Serializer
+import io.github.kotlinmania.zeroize.Zeroize
+import io.github.kotlinmania.zeroize.zeroize
+
 /**
  * Constant representing the scalar modulus (order of the P-256 group).
  * n = FFFFFFFF 00000000 FFFFFFFF FFFFFFFF BCE6FAAD A7179E84 F3B9CAC2 FC632551
@@ -8,6 +18,15 @@ package io.github.kotlinmania.p256
 internal val SCALAR_MODULUS: ULongArray =
     ulongArrayOf(
         0xF3B9CAC2FC632551uL,
+        0xBCE6FAADA7179E84uL,
+        0xFFFFFFFFFFFFFFFFuL,
+        0xFFFFFFFF00000000uL,
+    )
+
+/** ORDER - 1 for non-zero scalar reduction. */
+internal val SCALAR_MODULUS_MINUS_ONE: ULongArray =
+    ulongArrayOf(
+        0xF3B9CAC2FC632550uL,
         0xBCE6FAADA7179E84uL,
         0xFFFFFFFFFFFFFFFFuL,
         0xFFFFFFFF00000000uL,
@@ -41,8 +60,13 @@ internal val FRAC_MODULUS_2: ULongArray =
  */
 class Scalar(
     val value: ULongArray,
-) : Comparable<Scalar> {
+) : Comparable<Scalar>,
+    Zeroize {
     constructor() : this(ulongArrayOf(0uL, 0uL, 0uL, 0uL))
+
+    override fun zeroize() {
+        value.zeroize()
+    }
 
     companion object {
         /** Zero scalar. */
@@ -50,6 +74,23 @@ class Scalar(
 
         /** Multiplicative identity. */
         val ONE: Scalar = Scalar(ulongArrayOf(1uL, 0uL, 0uL, 0uL))
+
+        /**
+         * Generates a uniformly random scalar in [0, n) using OS randomness ([getrandom])
+         * and rejection sampling.
+         */
+        fun random(): Scalar {
+            val bytes = ByteArray(32)
+            while (true) {
+                val res = getrandom(bytes)
+                check(res.isOk) { res.errorMessage ?: "getrandom failed" }
+                val scalar = fromBytes(bytes)
+                if (scalar != null) {
+                    bytes.zeroize()
+                    return scalar
+                }
+            }
+        }
 
         /**
          * Creates a scalar from a big-endian byte array (32 bytes).
@@ -62,6 +103,9 @@ class Scalar(
             return Scalar(limbs)
         }
 
+        /**Attempts to parse the given byte array as an SEC1-encoded scalar. */
+        fun fromRepr(bytes: ByteArray): Scalar? = fromBytes(bytes)
+
         /** Creates a scalar from a hex string (big-endian, 64 hex chars). */
         fun fromHex(hex: String): Scalar? = fromBytes(hexToBytes(hex))
 
@@ -71,10 +115,56 @@ class Scalar(
         /** Creates a scalar from a u32 value. */
         fun fromU32(value: UInt): Scalar = Scalar(ulongArrayOf(value.toULong(), 0uL, 0uL, 0uL))
 
+        /** Creates a scalar from a SecretKey. */
+        fun fromSecretKey(secretKey: SecretKey): Scalar {
+            val inner = secretKey.scalar.scalar
+            return Scalar(inner.value.copyOf())
+        }
+
         /** Creates a scalar from a big-endian byte array without range-checking. */
         fun fromUintUnchecked(bytes: ByteArray): Scalar {
             require(bytes.size == 32) { "Scalar must be 32 bytes, got ${bytes.size}" }
             return Scalar(bytesToLimbs(bytes))
+        }
+
+        /** Reduces a 256-bit limb array modulo n. */
+        fun reduce(w: ULongArray): Scalar {
+            val (r0, b0) = Util.sbb(w[0], SCALAR_MODULUS[0], 0uL)
+            val (r1, b1) = Util.sbb(w[1], SCALAR_MODULUS[1], b0)
+            val (r2, b2) = Util.sbb(w[2], SCALAR_MODULUS[2], b1)
+            val (r3, b3) = Util.sbb(w[3], SCALAR_MODULUS[3], b2)
+            val underflow = b3 != 0uL
+            return conditionalSelect(Scalar(ulongArrayOf(r0, r1, r2, r3)), Scalar(w.copyOf()), underflow)
+        }
+
+        /** Reduces a 32-byte big-endian byte array modulo n. */
+        fun reduceBytes(bytes: ByteArray): Scalar {
+            require(bytes.size == 32) { "Expected 32 bytes, got ${bytes.size}" }
+            return reduce(bytesToLimbs(bytes))
+        }
+
+        /** Reduces a 256-bit limb array into a non-zero scalar in [1, n - 1]. */
+        fun reduceNonZero(w: ULongArray): Scalar {
+            val (r0, b0) = Util.sbb(w[0], SCALAR_MODULUS_MINUS_ONE[0], 0uL)
+            val (r1, b1) = Util.sbb(w[1], SCALAR_MODULUS_MINUS_ONE[1], b0)
+            val (r2, b2) = Util.sbb(w[2], SCALAR_MODULUS_MINUS_ONE[2], b1)
+            val (r3, b3) = Util.sbb(w[3], SCALAR_MODULUS_MINUS_ONE[3], b2)
+            val underflow = b3 != 0uL
+            val selected = conditionalSelect(Scalar(ulongArrayOf(r0, r1, r2, r3)), Scalar(w.copyOf()), underflow)
+            return selected.add(ONE)
+        }
+
+        /** Reduces a 32-byte big-endian byte array into a non-zero scalar in [1, n - 1]. */
+        fun reduceNonZeroBytes(bytes: ByteArray): Scalar {
+            require(bytes.size == 32) { "Expected 32 bytes, got ${bytes.size}" }
+            return reduceNonZero(bytesToLimbs(bytes))
+        }
+
+        /** Constant-time conditional select: returns [a] if [choice] is false, [b] if [choice] is true. */
+        fun conditionalSelect(a: Scalar, b: Scalar, choice: Boolean): Scalar {
+            val mask = if (choice) 0xFFFFFFFFFFFFFFFFuL else 0uL
+            val out = ULongArray(4) { i -> (a.value[i] and mask.inv()) or (b.value[i] and mask) }
+            return Scalar(out)
         }
     }
 
@@ -223,10 +313,19 @@ class Scalar(
     /** Negate: returns -self mod n = n - self. */
     fun negate(): Scalar = Scalar.ZERO.sub(this)
 
+    /** Returns the canonical 32-byte big-endian representation of this scalar. */
+    fun toRepr(): ByteArray = toBytes()
+
+    /** Constant-time equality comparison using [constantTimeEq32]. */
+    fun ctEq(other: Scalar): Boolean = constantTimeEq32(toBytes(), other.toBytes())
+
+    /** Serializes this scalar as a 32-byte big-endian byte slice via [Serializer]. */
+    internal fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> = serializer.serializeBytes(toBytes())
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Scalar) return false
-        return value.contentEquals(other.value)
+        return ctEq(other)
     }
 
     override fun hashCode(): Int = value.contentHashCode()
@@ -235,6 +334,24 @@ class Scalar(
 
     override fun toString(): String = "Scalar(0x${limbsToHex(value)})"
 }
+
+/** Deserializes a [Scalar] from a 32-byte big-endian byte slice via [Deserializer]. */
+internal fun <D : Deserializer> deserializeScalar(deserializer: D): SerdeResult<Scalar> =
+    deserializer.deserializeBytes(
+        object : Visitor<Scalar> {
+            override fun expecting(): String = "32-byte SEC1 scalar"
+
+            override fun visitBytes(v: ByteArray): SerdeResult<Scalar> {
+                if (v.size != 32) {
+                    return SerdeResult.failure(SerdeError.custom("invalid scalar length: ${v.size}"))
+                }
+                val scalar =
+                    Scalar.fromBytes(v)
+                        ?: return SerdeResult.failure(SerdeError.custom("scalar out of range"))
+                return SerdeResult.success(scalar)
+            }
+        },
+    )
 
 // --- Low-level scalar arithmetic (from scalar64.rs) ---
 
@@ -268,59 +385,21 @@ internal fun subMod(a: ULongArray, b: ULongArray, m: ULongArray): ULongArray {
     return result
 }
 
-/** Multiplies two 256-bit integers returning (lo, hi) as 256-bit values. */
+/** Multiplies two 256-bit integers returning (lo, hi) as 256-bit values using [Util.mac]. */
 internal fun mulWide(a: ULongArray, b: ULongArray): Pair<ULongArray, ULongArray> {
     val result = ULongArray(8)
     for (i in 0 until 4) {
         var carry = 0uL
         for (j in 0 until 4) {
-            val (mulHi, mulLo) = mulU64(a[i], b[j])
-            // Add mulLo to result[i+j], propagate carry
-            val (sum, c1) = Util.adc(result[i + j], mulLo, 0uL)
-            result[i + j] = sum
-            // Add mulHi + carry + c1 to result[i+j+1]
-            val (sum2, c2) = Util.adc(result[i + j + 1], mulHi, c1)
-            result[i + j + 1] = sum2
-            // Add the accumulated carry from previous j iterations
-            val (sum3, c3) = Util.adc(result[i + j + 1], 0uL, carry)
-            result[i + j + 1] = sum3
-            carry = c2 + c3
-            // Propagate carry upward
-            var k = i + j + 2
-            while (carry != 0uL && k < 8) {
-                val (s, c) = Util.adc(result[k], 0uL, carry)
-                result[k] = s
-                carry = c
-                k++
-            }
+            val (lo, hi) = Util.mac(result[i + j], a[i], b[j], carry)
+            result[i + j] = lo
+            carry = hi
         }
+        result[i + 4] = carry
     }
     val lo = ulongArrayOf(result[0], result[1], result[2], result[3])
     val hi = ulongArrayOf(result[4], result[5], result[6], result[7])
     return Pair(lo, hi)
-}
-
-/** Multiplies two 64-bit values returning (high, low). */
-private fun mulU64(a: ULong, b: ULong): Pair<ULong, ULong> {
-    val aLo = a and 0xFFFFFFFFu
-    val aHi = a shr 32
-    val bLo = b and 0xFFFFFFFFu
-    val bHi = b shr 32
-
-    val ll = aLo * bLo
-    val lh = aLo * bHi
-    val hl = aHi * bLo
-    val hh = aHi * bHi
-
-    // mid can overflow 64 bits (sum of three 64-bit values)
-    val mid = (lh and 0xFFFFFFFFu) + (hl and 0xFFFFFFFFu) + (ll shr 32)
-    val midLo = mid and 0xFFFFFFFFu
-    val midHi = mid shr 32
-
-    val lo = (ll and 0xFFFFFFFFu) or (midLo shl 32)
-    val hi = hh + (lh shr 32) + (hl shr 32) + midHi
-
-    return Pair(hi, lo)
 }
 
 /**

@@ -1,6 +1,10 @@
 // port-lint: source arithmetic/field.rs
 package io.github.kotlinmania.p256
 
+import io.github.kotlinmania.constanttimeeq.constantTimeEq32
+import io.github.kotlinmania.zeroize.Zeroize
+import io.github.kotlinmania.zeroize.zeroize
+
 /**
  * Field modulus serialized as hex.
  * p = 2^{224}(2^{32} − 1) + 2^{192} + 2^{96} − 1
@@ -35,9 +39,14 @@ internal typealias Fe = ULongArray
  */
 class FieldElement(
     val value: ULongArray,
-) : Comparable<FieldElement> {
+) : Comparable<FieldElement>,
+    Zeroize {
     /** Zero field element. */
     constructor() : this(ulongArrayOf(0uL, 0uL, 0uL, 0uL))
+
+    override fun zeroize() {
+        value.zeroize()
+    }
 
     companion object {
         /** Additive identity (0 in Montgomery form). */
@@ -59,6 +68,17 @@ class FieldElement(
             if (cmpLimbs(limbs, FIELD_MODULUS) >= 0) {
                 throw IllegalArgumentException("Field element not in range [0, p)")
             }
+            return FieldElement(feToMontgomery(limbs))
+        }
+
+        /**
+         * Attempts to parse the given 32-byte big-endian byte array as a field element.
+         * Returns null if not in range [0, p).
+         */
+        fun fromRepr(bytes: ByteArray): FieldElement? {
+            if (bytes.size != 32) return null
+            val limbs = bytesToLimbs(bytes)
+            if (cmpLimbs(limbs, FIELD_MODULUS) >= 0) return null
             return FieldElement(feToMontgomery(limbs))
         }
 
@@ -190,10 +210,20 @@ class FieldElement(
         return if (sqrt.square() == this) sqrt else null
     }
 
+    /**
+     * Returns the big-endian field element representation.
+     */
+    fun toRepr(): ByteArray = toBytes()
+
+    /**
+     * Constant-time equality comparison using `constant-time-eq-kotlin`.
+     */
+    fun ctEq(other: FieldElement): Boolean = constantTimeEq32(toBytes(), other.toBytes())
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is FieldElement) return false
-        return value.contentEquals(other.value)
+        return ctEq(other)
     }
 
     override fun hashCode(): Int = value.contentHashCode()
@@ -346,20 +376,8 @@ internal fun limbsToHex(limbs: ULongArray): String {
 internal fun hexToBytes(hex: String): ByteArray {
     val clean = if (hex.startsWith("0x") || hex.startsWith("0X")) hex.substring(2) else hex
     val padded = clean.padStart(64, '0')
-    return ByteArray(padded.length / 2) { i ->
-        val hi = padded[i * 2].hexDigitToInt()
-        val lo = padded[i * 2 + 1].hexDigitToInt()
-        ((hi shl 4) or lo).toByte()
-    }
+    return padded.hexToByteArray()
 }
-
-private fun Char.hexDigitToInt(): Int =
-    when (this) {
-        in '0'..'9' -> this - '0'
-        in 'a'..'f' -> this - 'a' + 10
-        in 'A'..'F' -> this - 'A' + 10
-        else -> 0
-    }
 
 /** Converts a big-endian byte array to little-endian limbs. */
 internal fun bytesToLimbs(bytes: ByteArray): ULongArray {

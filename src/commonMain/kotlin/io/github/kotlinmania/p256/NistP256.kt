@@ -1,6 +1,9 @@
 // port-lint: source lib.rs
 package io.github.kotlinmania.p256
 
+import io.github.kotlinmania.zeroize.Zeroize
+import io.github.kotlinmania.zeroize.ZeroizeOnDrop
+
 /**
  * NIST P-256 elliptic curve.
  *
@@ -56,9 +59,31 @@ object NistP256 {
 /** Non-zero scalar in NIST P-256 group. */
 class NonZeroScalar(
     val scalar: Scalar,
-) {
+) : Zeroize,
+    ZeroizeOnDrop,
+    AutoCloseable {
     init {
         require(!scalar.isZero()) { "Scalar must not be zero" }
+    }
+
+    override fun zeroize() {
+        scalar.zeroize()
+    }
+
+    override fun close() {
+        zeroize()
+    }
+
+    companion object {
+        /** Generates a random non-zero scalar using `getrandom-kotlin`. */
+        fun random(): NonZeroScalar {
+            while (true) {
+                val s = Scalar.random()
+                if (!s.isZero()) {
+                    return NonZeroScalar(s)
+                }
+            }
+        }
     }
 }
 
@@ -70,7 +95,32 @@ class PublicKey(
 /** Secret key represented by a NonZeroScalar. */
 class SecretKey(
     val scalar: NonZeroScalar,
-)
+) : Zeroize,
+    ZeroizeOnDrop,
+    AutoCloseable {
+    /** Serializes this secret key as 32 big-endian bytes. */
+    fun toBytes(): ByteArray = scalar.scalar.toBytes()
+
+    override fun zeroize() {
+        scalar.zeroize()
+    }
+
+    override fun close() {
+        zeroize()
+    }
+
+    companion object {
+        /** Generates a random secret key using `getrandom-kotlin`. */
+        fun random(): SecretKey = SecretKey(NonZeroScalar.random())
+
+        /** Parses a secret key from 32 big-endian bytes, or returns null if invalid or zero. */
+        fun fromBytes(bytes: ByteArray): SecretKey? {
+            val s = Scalar.fromBytes(bytes) ?: return null
+            if (s.isZero()) return null
+            return SecretKey(NonZeroScalar(s))
+        }
+    }
+}
 
 /** Encoded point bytes. */
 class EncodedPoint(

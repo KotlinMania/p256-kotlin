@@ -77,7 +77,7 @@ class FieldElementTest {
     fun repeatedAdd() {
         var r = FieldElement.ONE
         for (i in dblTestVectors.indices) {
-            assertEquals(dblTestVectors[i], r.toBytes().toHex(), "Index $i")
+            assertEquals(dblTestVectors[i], r.toBytes().toHexString(), "Index $i")
             r = r.add(r)
         }
     }
@@ -86,7 +86,7 @@ class FieldElementTest {
     fun repeatedDouble() {
         var r = FieldElement.ONE
         for (i in dblTestVectors.indices) {
-            assertEquals(dblTestVectors[i], r.toBytes().toHex(), "Index $i")
+            assertEquals(dblTestVectors[i], r.toBytes().toHexString(), "Index $i")
             r = r.double()
         }
     }
@@ -96,7 +96,7 @@ class FieldElementTest {
         var r = FieldElement.ONE
         val two = r.add(r)
         for (i in dblTestVectors.indices) {
-            assertEquals(dblTestVectors[i], r.toBytes().toHex(), "Index $i")
+            assertEquals(dblTestVectors[i], r.toBytes().toHexString(), "Index $i")
             r = r.multiply(two)
         }
     }
@@ -177,14 +177,13 @@ class FieldElementTest {
         assertEquals(four, two.square())
     }
 
-    private fun ByteArray.toHex(): String {
-        val hexChars = "0123456789abcdef"
-        val sb = StringBuilder(size * 2)
-        for (b in this) {
-            val v = b.toInt() and 0xFF
-            sb.append(hexChars[v shr 4])
-            sb.append(hexChars[v and 0x0F])
-        }
-        return sb.toString()
+    @Test
+    fun zeroizeAndCtEq() {
+        val a = FieldElement.fromHex("0000000000000000000000000000000000000000000000000000000000000005")
+        val b = FieldElement.fromHex("0000000000000000000000000000000000000000000000000000000000000005")
+        assertTrue(a.ctEq(b))
+        assertFalse(a.ctEq(FieldElement.ONE))
+        a.zeroize()
+        assertTrue(a.isZero())
     }
 }

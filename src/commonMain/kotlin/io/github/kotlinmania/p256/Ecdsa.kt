@@ -1,6 +1,13 @@
 // port-lint: source ecdsa.rs
 package io.github.kotlinmania.p256
 
+import io.github.kotlinmania.constanttimeeq.constantTimeEq32
+import io.github.kotlinmania.digest.Update
+import io.github.kotlinmania.sha2.Sha256
+import io.github.kotlinmania.sha2.Sha384
+import io.github.kotlinmania.zeroize.Zeroize
+import io.github.kotlinmania.zeroize.ZeroizeOnDrop
+
 /**
  * ECDSA/P-256 fixed-size signature (r, s as 32-byte arrays).
  */
@@ -16,7 +23,7 @@ data class Signature(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Signature) return false
-        return r.contentEquals(other.r) && s.contentEquals(other.s)
+        return constantTimeEq32(r, other.r) && constantTimeEq32(s, other.s)
     }
 
     override fun hashCode(): Int {
@@ -42,10 +49,48 @@ data class Signature(
  */
 class SigningKey(
     val secretScalar: NonZeroScalar,
-) {
+) : Zeroize,
+    ZeroizeOnDrop,
+    AutoCloseable {
     constructor(scalar: Scalar) : this(NonZeroScalar(scalar))
 
     fun toBytes(): ByteArray = secretScalar.scalar.toBytes()
+
+    override fun zeroize() {
+        secretScalar.zeroize()
+    }
+
+    override fun close() {
+        zeroize()
+    }
+
+    companion object {
+        /** Generates a random ECDSA/P-256 signing key using `getrandom-kotlin`. */
+        fun random(): SigningKey = SigningKey(NonZeroScalar.random())
+
+        /** Parses a signing key from 32 big-endian bytes, or returns null if invalid or zero. */
+        fun fromBytes(bytes: ByteArray): SigningKey? {
+            val s = Scalar.fromBytes(bytes) ?: return null
+            if (s.isZero()) return null
+            return SigningKey(NonZeroScalar(s))
+        }
+
+        /** Computes the default SHA-256 message digest for ECDSA/P-256 signing/verification. */
+        fun sha256Digest(message: ByteArray): ByteArray = Sha256.digest(message)
+
+        /** Computes a SHA-384 message digest for ECDSA/P-256 signing/verification. */
+        fun sha384Digest(message: ByteArray): ByteArray = Sha384.digest(message)
+
+        /** Creates a new streaming SHA-256 digest updater (`digest-kotlin` [Update]). */
+        internal fun newSha256Updater(): Update =
+            object : Update {
+                private val hasher = Sha256.new()
+
+                override fun update(data: ByteArray) {
+                    hasher.update(data)
+                }
+            }
+    }
 }
 
 /**
